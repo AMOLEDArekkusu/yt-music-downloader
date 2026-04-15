@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Collector Pro",
+    "subtitle": "YouTube ミュージックダウンローダー",
+    "version": "v2.1.0 ウェブ版"
+  },
+  "header": {
+    "themeLight": "ライト",
+    "themeDark": "ダーク"
+  },
+  "input": {
+    "placeholder": "YouTube Music の URL またはプレイリストリンクを貼り付け…",
+    "fetchButton": "トラックを取得",
+    "fetchingButton": "取得中…",
+    "pasteHint": "動画、プレイリスト、アルバムリンクに対応"
+  },
+  "tracks": {
+    "title": "トラックリスト",
+    "empty": "まだトラックが読み込まれていません。上の入力欄にURLを貼り付けてください。",
+    "count": "{count} 件のトラックが見つかりました",
+    "downloadAll": "すべてダウンロード",
+    "downloadZip": "ZIPでダウンロード",
+    "download": "ダウンロード",
+    "downloading": "ダウンロード中…",
+    "downloaded": "ダウンロード済み",
+    "duration": "{minutes}:{seconds}",
+    "selectAll": "すべて選択",
+    "deselectAll": "選択解除"
+  },
+  "config": {
+    "title": "設定",
+    "quality": "出力品質",
+    "qualityHigh": "最高品質 (320kbps)",
+    "qualityMedium": "中品質 (192kbps)",
+    "qualityStandard": "標準 (128kbps)",
+    "hiRes": "ハイレゾオーディオ",
+    "stereo48k": "ステレオ 48kHz",
+    "format": "MP3フォーマット"
+  },
+  "log": {
+    "title": "処理ログ",
+    "clear": "クリア",
+    "empty": "準備完了。YouTube URLを貼り付けて取得をクリック。",
+    "fetching": "URLからトラック情報を取得中…",
+    "fetchSuccess": "{count} 件のトラックが見つかりました。ダウンロード準備完了。",
+    "fetchError": "取得に失敗しました：{error}",
+    "downloadStart": "ダウンロード開始：{title}",
+    "downloadComplete": "ダウンロード完了：{filename}",
+    "downloadError": "ダウンロードエラー：{error}",
+    "cleanupDone": "セッションをクリーンアップしました。一時ファイルを削除済み。",
+    "allComplete": "すべてのダウンロードが完了しました！{count} 件保存済み。"
+  },
+  "errors": {
+    "invalidUrl": "有効な YouTube URL を入力してください。",
+    "networkError": "ネットワークエラー。接続を確認してください。",
+    "serverError": "サーバーエラー。しばらくしてからもう一度お試しください。",
+    "noTracks": "このURLにダウンロード可能なトラックが見つかりません。"
+  },
+  "footer": {
+    "powered": "yt-dlp & FFmpeg を使用",
+    "quality": "320kbps · ステレオ · 48kHz · 完全メタデータ",
+    "github": "GitHubで見る"
+  }
+}

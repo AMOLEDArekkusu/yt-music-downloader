@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Collector Pro",
+    "subtitle": "Pemuat Turun Muzik YouTube",
+    "version": "v2.1.0 Web"
+  },
+  "header": {
+    "themeLight": "Cerah",
+    "themeDark": "Gelap"
+  },
+  "input": {
+    "placeholder": "Tampal pautan URL YouTube Music atau senarai main…",
+    "fetchButton": "Dapatkan Trek",
+    "fetchingButton": "Mendapatkan…",
+    "pasteHint": "Menyokong video tunggal, senarai main, dan pautan album"
+  },
+  "tracks": {
+    "title": "Senarai Trek",
+    "empty": "Tiada trek dimuatkan lagi. Tampal URL di atas untuk bermula.",
+    "count": "{count} trek dijumpai",
+    "downloadAll": "Muat Turun Semua",
+    "downloadZip": "Muat Turun sebagai ZIP",
+    "download": "Muat Turun",
+    "downloading": "Memuat turun…",
+    "downloaded": "Dimuat turun",
+    "duration": "{minutes}:{seconds}",
+    "selectAll": "Pilih Semua",
+    "deselectAll": "Nyahpilih Semua"
+  },
+  "config": {
+    "title": "Konfigurasi",
+    "quality": "Kualiti Output",
+    "qualityHigh": "Kualiti Tertinggi (320kbps)",
+    "qualityMedium": "Kualiti Sederhana (192kbps)",
+    "qualityStandard": "Standard (128kbps)",
+    "hiRes": "Audio Hi-Res",
+    "stereo48k": "Stereo 48kHz",
+    "format": "Format MP3"
+  },
+  "log": {
+    "title": "Log Proses",
+    "clear": "Padam",
+    "empty": "Sedia untuk bermula. Tampal URL YouTube dan klik Dapatkan.",
+    "fetching": "Mendapatkan metadata trek dari URL…",
+    "fetchSuccess": "{count} trek dijumpai. Sedia untuk muat turun.",
+    "fetchError": "Gagal mendapatkan trek: {error}",
+    "downloadStart": "Memulakan muat turun: {title}",
+    "downloadComplete": "Muat turun selesai: {filename}",
+    "downloadError": "Ralat muat turun: {error}",
+    "cleanupDone": "Sesi dibersihkan. Semua fail sementara dipadam.",
+    "allComplete": "Semua muat turun selesai! {count} trek disimpan."
+  },
+  "errors": {
+    "invalidUrl": "Sila masukkan URL YouTube yang sah.",
+    "networkError": "Ralat rangkaian. Sila periksa sambungan anda.",
+    "serverError": "Ralat pelayan. Sila cuba lagi kemudian.",
+    "noTracks": "Tiada trek yang boleh dimuat turun dijumpai di URL ini."
+  },
+  "footer": {
+    "powered": "Dikuasakan oleh yt-dlp & FFmpeg",
+    "quality": "320kbps · Stereo · 48kHz · Metadata Penuh",
+    "github": "Lihat di GitHub"
+  }
+}

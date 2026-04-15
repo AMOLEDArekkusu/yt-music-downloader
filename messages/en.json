@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Collector Pro",
+    "subtitle": "YouTube Music Downloader",
+    "version": "v2.1.0 Web"
+  },
+  "header": {
+    "themeLight": "Light",
+    "themeDark": "Dark"
+  },
+  "input": {
+    "placeholder": "Paste a YouTube Music URL or Playlist link…",
+    "fetchButton": "Fetch Tracks",
+    "fetchingButton": "Fetching…",
+    "pasteHint": "Supports single videos, playlists, and album links"
+  },
+  "tracks": {
+    "title": "Track List",
+    "empty": "No tracks loaded yet. Paste a URL above to get started.",
+    "count": "{count} track(s) found",
+    "downloadAll": "Download All",
+    "downloadZip": "Download as ZIP",
+    "download": "Download",
+    "downloading": "Downloading…",
+    "downloaded": "Downloaded",
+    "duration": "{minutes}:{seconds}",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All"
+  },
+  "config": {
+    "title": "Configuration",
+    "quality": "Output Quality",
+    "qualityHigh": "Highest Quality (320kbps)",
+    "qualityMedium": "Medium Quality (192kbps)",
+    "qualityStandard": "Standard (128kbps)",
+    "hiRes": "Hi-Res Audio",
+    "stereo48k": "Stereo 48kHz",
+    "format": "MP3 Format"
+  },
+  "log": {
+    "title": "Process Log",
+    "clear": "Clear",
+    "empty": "Ready to start. Paste a YouTube URL and click Fetch.",
+    "fetching": "Fetching track metadata from URL…",
+    "fetchSuccess": "Found {count} track(s). Ready to download.",
+    "fetchError": "Failed to fetch tracks: {error}",
+    "downloadStart": "Starting download: {title}",
+    "downloadComplete": "Download complete: {filename}",
+    "downloadError": "Download error: {error}",
+    "cleanupDone": "Session cleaned up. All temp files removed.",
+    "allComplete": "All downloads complete! {count} track(s) saved."
+  },
+  "errors": {
+    "invalidUrl": "Please enter a valid YouTube URL.",
+    "networkError": "Network error. Please check your connection.",
+    "serverError": "Server error. Please try again later.",
+    "noTracks": "No downloadable tracks found at this URL."
+  },
+  "footer": {
+    "powered": "Powered by yt-dlp & FFmpeg",
+    "quality": "320kbps · Stereo · 48kHz · Full Metadata",
+    "github": "View on GitHub"
+  }
+}

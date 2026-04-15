@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Collector Pro",
+    "subtitle": "YouTube 音乐下载器",
+    "version": "v2.1.0 网页版"
+  },
+  "header": {
+    "themeLight": "浅色",
+    "themeDark": "深色"
+  },
+  "input": {
+    "placeholder": "粘贴 YouTube 音乐链接或播放列表链接…",
+    "fetchButton": "获取曲目",
+    "fetchingButton": "获取中…",
+    "pasteHint": "支持单个视频、播放列表和专辑链接"
+  },
+  "tracks": {
+    "title": "曲目列表",
+    "empty": "尚未加载曲目。在上方粘贴链接以开始。",
+    "count": "找到 {count} 首曲目",
+    "downloadAll": "全部下载",
+    "downloadZip": "下载为 ZIP",
+    "download": "下载",
+    "downloading": "下载中…",
+    "downloaded": "已下载",
+    "duration": "{minutes}:{seconds}",
+    "selectAll": "全选",
+    "deselectAll": "取消全选"
+  },
+  "config": {
+    "title": "配置",
+    "quality": "输出质量",
+    "qualityHigh": "最高质量 (320kbps)",
+    "qualityMedium": "中等质量 (192kbps)",
+    "qualityStandard": "标准 (128kbps)",
+    "hiRes": "高解析度音频",
+    "stereo48k": "立体声 48kHz",
+    "format": "MP3 格式"
+  },
+  "log": {
+    "title": "处理日志",
+    "clear": "清除",
+    "empty": "准备就绪。粘贴 YouTube 链接并点击获取。",
+    "fetching": "正在获取曲目元数据…",
+    "fetchSuccess": "找到 {count} 首曲目。准备下载。",
+    "fetchError": "获取失败：{error}",
+    "downloadStart": "开始下载：{title}",
+    "downloadComplete": "下载完成：{filename}",
+    "downloadError": "下载错误：{error}",
+    "cleanupDone": "会话已清理。所有临时文件已删除。",
+    "allComplete": "全部下载完成！已保存 {count} 首曲目。"
+  },
+  "errors": {
+    "invalidUrl": "请输入有效的 YouTube 链接。",
+    "networkError": "网络错误。请检查您的网络连接。",
+    "serverError": "服务器错误。请稍后重试。",
+    "noTracks": "未在此链接找到可下载的曲目。"
+  },
+  "footer": {
+    "powered": "由 yt-dlp 和 FFmpeg 驱动",
+    "quality": "320kbps · 立体声 · 48kHz · 完整元数据",
+    "github": "在 GitHub 上查看"
+  }
+}

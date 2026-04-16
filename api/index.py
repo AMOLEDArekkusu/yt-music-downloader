@@ -161,6 +161,44 @@ def handle_fetch():
         return jsonify({'error': str(e)}), 500
 
 
+def _cleanup_stale_files(session_dir: str, track_id: str):
+    """Remove leftover .temp.* and partial files from a previous attempt."""
+    if not os.path.isdir(session_dir):
+        return
+    prefix = track_id or 'track'
+    for f in os.listdir(session_dir):
+        # Remove .temp.mp3, .temp.webm, .part, etc. from previous runs
+        if (f.startswith(prefix) and
+                ('.temp.' in f or f.endswith('.part') or f.endswith('.ytdl'))):
+            try:
+                os.remove(os.path.join(session_dir, f))
+            except OSError:
+                pass
+
+
+def _robust_move(src: str, dst: str, retries: int = 5, delay: float = 0.5):
+    """
+    Move/rename a file with retry logic for Windows file-locking issues.
+    Windows antivirus and FFmpeg sometimes hold brief locks on newly created files.
+    """
+    import time
+    import gc
+
+    for attempt in range(retries):
+        try:
+            # Remove destination if it already exists
+            if os.path.exists(dst):
+                os.remove(dst)
+            shutil.move(src, dst)
+            return
+        except PermissionError:
+            if attempt < retries - 1:
+                gc.collect()  # Release any Python-held file handles
+                time.sleep(delay * (attempt + 1))
+            else:
+                raise
+
+
 @app.route('/api/download', methods=['POST'])
 def handle_download():
     """
@@ -181,6 +219,9 @@ def handle_download():
         return jsonify({'error': 'session_id and track_url are required.'}), 400
 
     session_dir = get_session_dir(session_id)
+
+    # Clean up stale temp files from any previous failed attempt
+    _cleanup_stale_files(session_dir, track_id)
 
     # Temporary output template — yt-dlp will replace %(ext)s
     raw_output = os.path.join(session_dir, f"{track_id or 'track'}_raw.%(ext)s")
@@ -241,6 +282,12 @@ def handle_download():
         # Find the downloaded MP3 file (yt-dlp names it with the raw template)
         raw_mp3 = os.path.join(session_dir, f"{track_id or 'track'}_raw.mp3")
         if not os.path.exists(raw_mp3):
+            # Also check for .temp.mp3 — yt-dlp may have failed mid-rename
+            temp_mp3 = os.path.join(session_dir, f"{track_id or 'track'}_raw.temp.mp3")
+            if os.path.exists(temp_mp3):
+                _robust_move(temp_mp3, raw_mp3)
+
+        if not os.path.exists(raw_mp3):
             # Search for any mp3 in session dir matching the track_id pattern
             for f in os.listdir(session_dir):
                 if f.endswith('.mp3') and (track_id in f or 'raw' in f):
@@ -250,9 +297,9 @@ def handle_download():
         if not os.path.exists(raw_mp3):
             return jsonify({'error': 'MP3 file was not generated. FFmpeg may be missing.'}), 500
 
-        # Rename to final format
+        # Rename to final format (with retry for Windows file locking)
         if raw_mp3 != final_path:
-            shutil.move(raw_mp3, final_path)
+            _robust_move(raw_mp3, final_path)
 
         # Clean up leftover thumbnail files and other temp artifacts
         for f in os.listdir(session_dir):

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   Music,
   Search,
@@ -65,27 +65,25 @@ export default function Home() {
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [logCounter, setLogCounter] = useState(0);
+  const logCounterRef = useRef(0);
 
   // ─── Logging helper ─────────────────────────────────────────────────
   const addLog = useCallback(
     (message: string, type: LogEntry["type"] = "info") => {
       const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
-      setLogCounter((prev) => {
-        const newId = prev + 1;
-        setLogs((prevLogs) => [
-          ...prevLogs,
-          { id: newId, message, type, timestamp: ts },
-        ]);
-        return newId;
-      });
+      logCounterRef.current += 1;
+      const newId = logCounterRef.current;
+      setLogs((prevLogs) => [
+        ...prevLogs,
+        { id: newId, message, type, timestamp: ts },
+      ]);
     },
     []
   );
 
   const clearLogs = useCallback(() => {
     setLogs([]);
-    setLogCounter(0);
+    logCounterRef.current = 0;
   }, []);
 
   // ─── Persist locale ─────────────────────────────────────────────────

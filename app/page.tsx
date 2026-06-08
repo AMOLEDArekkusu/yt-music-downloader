@@ -17,6 +17,7 @@ import LanguageSwitcher, {
 } from "./components/LanguageSwitcher";
 import TrackCard, { type Track, type TrackStatus } from "./components/TrackCard";
 import ProgressLog, { type LogEntry } from "./components/ProgressLog";
+import CookieStatusBanner from "./components/CookieStatusBanner";
 
 // ─── i18n: client-side messages loader ────────────────────────────────
 import enMessages from "../messages/en.json";
@@ -316,6 +317,13 @@ export default function Home() {
             {t.input.pasteHint}
           </p>
         </div>
+
+        {/* ── Cookie Status Banner ── */}
+        <CookieStatusBanner
+          apiBase={API_BASE}
+          t={t.cookies}
+          onLog={addLog}
+        />
 
         {/* ── URL Input & Fetch ── */}
         <div

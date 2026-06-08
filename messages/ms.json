@@ -60,5 +60,17 @@
     "powered": "Dikuasakan oleh yt-dlp & FFmpeg",
     "quality": "320kbps · Stereo · 48kHz · Metadata Penuh",
     "github": "Lihat di GitHub"
+  },
+  "cookies": {
+    "statusActive": "Kuki aktif · {days} hari lalu",
+    "statusExpiringSoon": "Kuki hampir tamat · Sila muat semula",
+    "statusMissing": "Tiada kuki · YouTube akan menyekat permintaan",
+    "captureButton": "Tangkap Kuki Automatik",
+    "capturing": "Membuka tetingkap log masuk YouTube…",
+    "captureSuccess": "Kuki berjaya ditangkap!",
+    "captureError": "Tangkapan gagal: {error}",
+    "captureTimeout": "Masa menunggu log masuk tamat. Sila cuba lagi.",
+    "chromeNotFound": "Chrome tidak dijumpai. Sila pasang Chrome atau eksport cookies.txt secara manual.",
+    "manualHint": "Atau eksport secara manual menggunakan sambungan pelayar \"Get cookies.txt LOCALLY\"."
   }
 }

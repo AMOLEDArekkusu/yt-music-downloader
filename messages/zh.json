@@ -60,5 +60,17 @@
     "powered": "由 yt-dlp 和 FFmpeg 驱动",
     "quality": "320kbps · 立体声 · 48kHz · 完整元数据",
     "github": "在 GitHub 上查看"
+  },
+  "cookies": {
+    "statusActive": "Cookie 有效 · 已使用 {days} 天",
+    "statusExpiringSoon": "Cookie 即将过期 · 建议刷新",
+    "statusMissing": "未找到 Cookie · YouTube 将拦截请求",
+    "captureButton": "自动获取 Cookie",
+    "capturing": "正在打开 YouTube 登录窗口…",
+    "captureSuccess": "Cookie 获取成功！",
+    "captureError": "获取失败：{error}",
+    "captureTimeout": "等待登录超时，请重试。",
+    "chromeNotFound": "未找到 Chrome，请安装 Chrome 或手动导出 cookies.txt。",
+    "manualHint": "或使用浏览器扩展 \"Get cookies.txt LOCALLY\" 手动导出。"
   }
 }

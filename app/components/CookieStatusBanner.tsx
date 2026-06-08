@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { ShieldCheck, ShieldAlert, ShieldX, RefreshCw, Loader2, Cookie } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ShieldX, RefreshCw, Loader2, Cookie, Upload, CheckCircle2 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,6 +16,8 @@ interface CookiesStatus {
   age_days: number | null;
   fresh: boolean;
   capture: CaptureState;
+  is_vercel: boolean;
+  source: "tmp" | "repo" | "none";
 }
 
 export interface CookieBannerT {
@@ -29,6 +31,11 @@ export interface CookieBannerT {
   captureTimeout: string;
   chromeNotFound: string;
   manualHint: string;
+  uploadButton: string;
+  uploadSuccess: string;
+  uploadError: string;
+  uploadHint: string;
+  dropHint: string;
 }
 
 interface Props {
@@ -52,8 +59,13 @@ function tpl(template: string, vars: Record<string, string | number>): string {
 export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
   const [status, setStatus] = useState<CookiesStatus | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevCaptureStatus = useRef<string>("idle");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Fetch cookie status ──────────────────────────────────────────────────────
   const fetchStatus = useCallback(async () => {
@@ -78,11 +90,6 @@ export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
         }
         prevCaptureStatus.current = cs;
       }
-
-      // Stop polling once capture finishes.
-      if (!data.capture.running && pollRef.current && !data.capture.running) {
-        // Keep a slow poll (every 30s) to refresh the age display.
-      }
     } catch {
       // Backend not reachable — silently skip.
     }
@@ -91,7 +98,6 @@ export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
   // ── Mount: initial fetch + periodic refresh ──────────────────────────────────
   useEffect(() => {
     fetchStatus();
-    // Poll every 30 s normally; the capture flow starts its own fast poll.
     const id = setInterval(fetchStatus, 30_000);
     return () => clearInterval(id);
   }, [fetchStatus]);
@@ -111,7 +117,7 @@ export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
     };
   }, [isCapturing, fetchStatus]);
 
-  // ── Trigger capture ──────────────────────────────────────────────────────────
+  // ── Trigger Chrome auto-capture (local only) ─────────────────────────────────
   const handleCapture = useCallback(async () => {
     if (isCapturing) return;
     setIsCapturing(true);
@@ -125,6 +131,10 @@ export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
       if (!res.ok) {
         if (data.error_type === "chrome_not_found") {
           onLog(t.chromeNotFound, "error");
+        } else if (data.error_type === "vercel_unsupported") {
+          // Should not happen (button is hidden on Vercel), but handle gracefully.
+          onLog(data.error || t.chromeNotFound, "error");
+          setShowUpload(true);
         } else {
           onLog(tpl(t.captureError, { error: data.error || `HTTP ${res.status}` }), "error");
         }
@@ -138,6 +148,79 @@ export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
       setIsCapturing(false);
     }
   }, [isCapturing, apiBase, t, onLog]);
+
+  // ── Upload cookies.txt file ───────────────────────────────────────────────────
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (isUploading) return;
+
+    // Basic client-side validation
+    if (!file.name.endsWith(".txt") && file.type !== "text/plain") {
+      const msg = t.uploadError.replace("{error}", "Please upload a .txt file");
+      onLog(msg, "error");
+      setUploadMessage(msg);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("cookies_file", file);
+
+      const res = await fetch(`${apiBase}/api/cookies/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const errMsg = tpl(t.uploadError, { error: data.error || `HTTP ${res.status}` });
+        onLog(errMsg, "error");
+        setUploadMessage(errMsg);
+        return;
+      }
+
+      const successMsg = tpl(t.uploadSuccess, { lines: data.lines ?? 0 });
+      onLog(successMsg, "success");
+      setUploadMessage(successMsg);
+      setShowUpload(false);
+      // Refresh status to reflect the new cookie file
+      setTimeout(fetchStatus, 500);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      const errMsg = tpl(t.uploadError, { error: msg });
+      onLog(errMsg, "error");
+      setUploadMessage(errMsg);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [isUploading, apiBase, t, onLog, fetchStatus]);
+
+  // ── Drag-and-drop handlers ───────────────────────────────────────────────────
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  }, [handleFileUpload]);
+
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileUpload(file);
+    // Reset so the same file can be re-uploaded
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [handleFileUpload]);
 
   // ── Derive visual state ──────────────────────────────────────────────────────
   type BannerVariant = "active" | "expiring" | "missing";
@@ -192,106 +275,217 @@ export default function CookieStatusBanner({ apiBase, t, onLog }: Props) {
   // Don't render until first status check completes (avoids flash).
   if (status === null) return null;
 
+  const isVercel = status.is_vercel;
+  const isUploadError = uploadMessage && uploadMessage.includes(t.uploadError.split("{error}")[0]);
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        padding: "12px 16px",
-        borderRadius: "12px",
-        border: `1px solid ${vs.border}`,
-        background: vs.bg,
-        transition: "all 0.3s ease",
-        flexWrap: "wrap",
-      }}
-    >
-      {/* Icon */}
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {/* ── Status bar ── */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "8px",
-          flexShrink: 0,
+          gap: "12px",
+          padding: "12px 16px",
+          borderRadius: "12px",
+          border: `1px solid ${vs.border}`,
+          background: vs.bg,
+          transition: "all 0.3s ease",
+          flexWrap: "wrap",
         }}
       >
-        {isCapturing ? (
-          <Loader2
-            size={18}
-            style={{ color: "var(--accent)", animation: "spin 1s linear infinite" }}
-          />
-        ) : (
-          <Icon size={18} style={{ color: vs.iconColor }} />
-        )}
-        <Cookie size={14} style={{ color: "var(--text-tertiary)" }} />
-      </div>
-
-      {/* Status text */}
-      <span
-        style={{
-          fontSize: "13px",
-          fontWeight: 500,
-          color: isCapturing ? "var(--text-secondary)" : vs.textColor,
-          flex: 1,
-          minWidth: "160px",
-        }}
-      >
-        {isCapturing
-          ? (status.capture.message || t.capturing)
-          : getStatusLabel()}
-      </span>
-
-      {/* Manual hint */}
-      {variant === "missing" && !isCapturing && (
-        <span
+        {/* Icon */}
+        <div
           style={{
-            fontSize: "11px",
-            color: "var(--text-tertiary)",
-            flex: "0 0 100%",
-            paddingLeft: "26px",
-            marginTop: "-4px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            flexShrink: 0,
           }}
         >
-          {t.manualHint}
+          {isCapturing ? (
+            <Loader2
+              size={18}
+              style={{ color: "var(--accent)", animation: "spin 1s linear infinite" }}
+            />
+          ) : (
+            <Icon size={18} style={{ color: vs.iconColor }} />
+          )}
+          <Cookie size={14} style={{ color: "var(--text-tertiary)" }} />
+        </div>
+
+        {/* Status text */}
+        <span
+          style={{
+            fontSize: "13px",
+            fontWeight: 500,
+            color: isCapturing ? "var(--text-secondary)" : vs.textColor,
+            flex: 1,
+            minWidth: "160px",
+          }}
+        >
+          {isCapturing
+            ? (status.capture.message || t.capturing)
+            : getStatusLabel()}
         </span>
-      )}
 
-      {/* Action buttons */}
-      <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-        {/* Refresh (shown when expiring or missing and not capturing) */}
-        {(variant === "expiring" || variant === "missing") && !isCapturing && (
-          <button
-            id="cookie-capture-button"
-            className="btn btn-primary"
-            onClick={handleCapture}
-            style={{ padding: "8px 16px", fontSize: "13px", gap: "6px" }}
-          >
-            <RefreshCw size={13} />
-            {t.captureButton}
-          </button>
-        )}
-
-        {/* Re-capture even when active (for manual refresh) */}
-        {variant === "active" && !isCapturing && (
-          <button
-            id="cookie-refresh-button"
-            className="btn"
-            onClick={handleCapture}
-            title="Re-capture cookies"
+        {/* Manual hint / hint text */}
+        {variant === "missing" && !isCapturing && !showUpload && (
+          <span
             style={{
-              padding: "6px 12px",
-              fontSize: "12px",
-              gap: "5px",
-              background: "transparent",
-              border: "1px solid var(--border)",
-              color: "var(--text-secondary)",
+              fontSize: "11px",
+              color: "var(--text-tertiary)",
+              flex: "0 0 100%",
+              paddingLeft: "26px",
+              marginTop: "-4px",
             }}
           >
-            <RefreshCw size={12} />
-            Refresh
-          </button>
+            {t.manualHint}
+          </span>
         )}
+
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: "8px", flexShrink: 0, flexWrap: "wrap" }}>
+
+          {/* Upload button — always available */}
+          {!isCapturing && (
+            <button
+              id="cookie-upload-button"
+              className="btn btn-primary"
+              onClick={() => setShowUpload((v) => !v)}
+              style={{ padding: "8px 16px", fontSize: "13px", gap: "6px" }}
+            >
+              <Upload size={13} />
+              {t.uploadButton}
+            </button>
+          )}
+
+          {/* Auto-Capture — local only (hidden on Vercel) */}
+          {!isVercel && (variant === "expiring" || variant === "missing") && !isCapturing && (
+            <button
+              id="cookie-capture-button"
+              className="btn"
+              onClick={handleCapture}
+              style={{
+                padding: "8px 14px",
+                fontSize: "13px",
+                gap: "6px",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <RefreshCw size={13} />
+              {t.captureButton}
+            </button>
+          )}
+
+          {/* Re-capture even when active (local only) */}
+          {!isVercel && variant === "active" && !isCapturing && (
+            <button
+              id="cookie-refresh-button"
+              className="btn"
+              onClick={handleCapture}
+              title="Re-capture cookies"
+              style={{
+                padding: "6px 12px",
+                fontSize: "12px",
+                gap: "5px",
+                background: "transparent",
+                border: "1px solid var(--border)",
+                color: "var(--text-secondary)",
+              }}
+            >
+              <RefreshCw size={12} />
+              Refresh
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ── Upload drop-zone ── */}
+      {showUpload && (
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          style={{
+            padding: "20px",
+            borderRadius: "12px",
+            border: `2px dashed ${isDragging ? "var(--accent)" : "var(--border)"}`,
+            background: isDragging
+              ? "rgba(var(--accent-rgb, 99,102,241), 0.06)"
+              : "var(--card-bg, rgba(255,255,255,0.03))",
+            transition: "all 0.2s ease",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "12px",
+            textAlign: "center",
+            cursor: "pointer",
+          }}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            id="cookies-file-input"
+            type="file"
+            accept=".txt,text/plain"
+            style={{ display: "none" }}
+            onChange={handleFileInputChange}
+          />
+
+          {isUploading ? (
+            <Loader2 size={28} style={{ color: "var(--accent)", animation: "spin 1s linear infinite" }} />
+          ) : uploadMessage && !isUploadError ? (
+            <CheckCircle2 size={28} style={{ color: "#22c55e" }} />
+          ) : (
+            <Upload size={28} style={{ color: "var(--text-tertiary)", opacity: 0.7 }} />
+          )}
+
+          <div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>
+              {isUploading ? "Uploading…" : t.dropHint}
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+              {t.uploadHint}
+            </p>
+          </div>
+
+          {uploadMessage && (
+            <span
+              style={{
+                fontSize: "12px",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                background: isUploadError
+                  ? "rgba(239,68,68,0.1)"
+                  : "rgba(34,197,94,0.1)",
+                color: isUploadError ? "#ef4444" : "#22c55e",
+                fontWeight: 500,
+              }}
+            >
+              {uploadMessage}
+            </span>
+          )}
+
+          <button
+            className="btn"
+            style={{
+              padding: "8px 18px",
+              fontSize: "13px",
+              background: "var(--accent)",
+              color: "#fff",
+              border: "none",
+              gap: "6px",
+              pointerEvents: "none", // click is handled by the wrapper div
+            }}
+          >
+            <Upload size={13} />
+            Choose cookies.txt
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -65,12 +65,17 @@
     "statusActive": "Cookie 有效 · 已使用 {days} 天",
     "statusExpiringSoon": "Cookie 即将过期 · 建议刷新",
     "statusMissing": "未找到 Cookie · YouTube 将拦截请求",
-    "captureButton": "自动获取 Cookie",
+    "captureButton": "自动获取",
     "capturing": "正在打开 YouTube 登录窗口…",
     "captureSuccess": "Cookie 获取成功！",
     "captureError": "获取失败：{error}",
     "captureTimeout": "等待登录超时，请重试。",
-    "chromeNotFound": "未找到 Chrome，请安装 Chrome 或手动导出 cookies.txt。",
-    "manualHint": "或使用浏览器扩展 \"Get cookies.txt LOCALLY\" 手动导出。"
+    "chromeNotFound": "未找到 Chrome，请安装 Chrome 或手动上传 cookies.txt。",
+    "manualHint": "使用浏览器扩展 \"Get cookies.txt LOCALLY\" 导出 cookies.txt，然后点击上传。",
+    "uploadButton": "上传 cookies.txt",
+    "uploadSuccess": "Cookie 上传成功！共保存 {lines} 条记录。",
+    "uploadError": "上传失败：{error}",
+    "uploadHint": "使用 \"Get cookies.txt LOCALLY\" 扩展导出，然后将文件拖放到此处。",
+    "dropHint": "将 cookies.txt 拖放到此处，或点击浏览"
   }
 }

@@ -65,12 +65,17 @@
     "statusActive": "Cookies active · {days}d old",
     "statusExpiringSoon": "Cookies expiring soon · Refresh recommended",
     "statusMissing": "No cookies · YouTube will block requests",
-    "captureButton": "Auto-Capture Cookies",
+    "captureButton": "Auto-Capture",
     "capturing": "Opening YouTube login window…",
     "captureSuccess": "Cookies captured successfully!",
     "captureError": "Capture failed: {error}",
     "captureTimeout": "Timed out waiting for sign-in. Please try again.",
-    "chromeNotFound": "Chrome not found. Please install Chrome or export cookies.txt manually.",
-    "manualHint": "Or export manually using the \"Get cookies.txt LOCALLY\" browser extension."
+    "chromeNotFound": "Chrome not found. Please install Chrome or upload cookies.txt manually.",
+    "manualHint": "Export cookies.txt using the \"Get cookies.txt LOCALLY\" browser extension, then click Upload.",
+    "uploadButton": "Upload cookies.txt",
+    "uploadSuccess": "Cookies uploaded! {lines} entries saved.",
+    "uploadError": "Upload failed: {error}",
+    "uploadHint": "Export from YouTube using the \"Get cookies.txt LOCALLY\" extension, then drop the file here.",
+    "dropHint": "Drop cookies.txt here, or click to browse"
   }
 }

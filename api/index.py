@@ -26,6 +26,10 @@ CORS(app)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
+# Detect serverless / Vercel environment.
+# On Vercel, only /tmp is writable; the repo filesystem is read-only.
+IS_VERCEL = bool(os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV"))
+
 # Base temp directory for all download sessions
 TEMP_BASE = os.path.join(tempfile.gettempdir(), "yt_music_dl_sessions")
 os.makedirs(TEMP_BASE, exist_ok=True)
@@ -35,8 +39,24 @@ DEFAULT_QUALITY = "320"  # kbps
 DEFAULT_SAMPLE_RATE = "48000"  # Hz
 DEFAULT_CHANNELS = "2"  # stereo
 
-# Path to cookies.txt (Netscape format, written by auto-capture or manually exported).
-COOKIES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt")
+# Cookies file paths:
+#   COOKIES_FILE_TMP   – /tmp/yt_cookies.txt  (writable everywhere, including Vercel)
+#   COOKIES_FILE_REPO  – api/cookies.txt      (read-only on Vercel, but useful as a
+#                                               pre-committed fallback cookie seed)
+#
+# Priority for reading:  TMP first, then REPO (so an uploaded file takes precedence).
+# All write operations (upload, auto-capture) always target TMP.
+COOKIES_FILE_TMP  = os.path.join(tempfile.gettempdir(), "yt_cookies.txt")
+COOKIES_FILE_REPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cookies.txt")
+
+# Canonical "active" cookies file — the first one that exists, preferred order above.
+def _active_cookies_file() -> str | None:
+    """Return the path to the best available cookies.txt, or None."""
+    if os.path.isfile(COOKIES_FILE_TMP) and os.path.getsize(COOKIES_FILE_TMP) > 10:
+        return COOKIES_FILE_TMP
+    if os.path.isfile(COOKIES_FILE_REPO) and os.path.getsize(COOKIES_FILE_REPO) > 10:
+        return COOKIES_FILE_REPO
+    return None
 
 # How long to wait for the user to sign in before giving up (seconds).
 CAPTURE_TIMEOUT_S = 300  # 5 minutes
@@ -86,20 +106,22 @@ def _get_cookie_opts() -> dict:
     """
     Return yt-dlp cookie options to bypass YouTube bot-detection.
 
-    NOTE: Chrome/Edge 127+ uses App-Bound Encryption (DPAPI) which prevents
-    any external process from reading browser cookies. Browser auto-extraction
-    is therefore disabled. Only a manually exported cookies.txt is supported.
+    Cookie resolution order:
+      1. /tmp/yt_cookies.txt  — written by the /api/cookies/upload endpoint
+                                (works on Vercel and local)
+      2. api/cookies.txt      — pre-committed seed file (read-only on Vercel)
 
     To generate cookies.txt:
       1. Install the 'Get cookies.txt LOCALLY' Chrome/Edge extension
       2. Visit youtube.com while signed in
-      3. Click the extension icon -> Export -> save as api/cookies.txt
+      3. Click the extension icon -> Export -> upload via the app's cookie panel
     """
-    if os.path.isfile(COOKIES_FILE):
-        logger.info("Using cookies from file: %s", COOKIES_FILE)
-        return {'cookiefile': COOKIES_FILE}
+    active = _active_cookies_file()
+    if active:
+        logger.info("Using cookies from file: %s", active)
+        return {'cookiefile': active}
 
-    logger.warning("No cookies.txt found at %s. YouTube may block requests.", COOKIES_FILE)
+    logger.warning("No cookies.txt found. YouTube may block requests.")
     return {}
 
 
@@ -173,13 +195,13 @@ def handle_fetch():
         return jsonify({'error': 'URL is required.'}), 400
 
     # If no cookies file exists, return a structured auth_required error that the
-    # frontend can surface with an actionable "Auto-Capture" button.
-    if not os.path.isfile(COOKIES_FILE):
+    # frontend can surface with an actionable "Upload Cookies" or "Auto-Capture" button.
+    if not _active_cookies_file():
         return jsonify({
             'error': (
                 'YouTube requires authentication cookies. '
-                'Use the \'Auto-Capture\' button in the app to sign in automatically, '
-                'or export cookies.txt manually using the \'Get cookies.txt LOCALLY\' extension.'
+                'Export cookies.txt using the \'Get cookies.txt LOCALLY\' browser extension '
+                'then upload it via the cookie panel in the app.'
             ),
             'error_type': 'auth_required',
         }), 401
@@ -756,7 +778,7 @@ def _run_capture(chrome_exe: str):
             import yt_dlp
             with yt_dlp.YoutubeDL({
                 'cookiesfrombrowser': ('chromium', tmp_profile, None, None),
-                'cookiefile': COOKIES_FILE,
+                'cookiefile': COOKIES_FILE_TMP,
                 'skip_download': True,
                 'quiet': True,
                 'no_warnings': True,
@@ -774,11 +796,11 @@ def _run_capture(chrome_exe: str):
             # Fallback: manually write a minimal Netscape file from the SQLite DB.
             _manual_export_cookies(cookies_db)
 
-        if os.path.isfile(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 100:
+        if os.path.isfile(COOKIES_FILE_TMP) and os.path.getsize(COOKIES_FILE_TMP) > 100:
             with _capture_lock:
                 _capture_state = {"running": False, "status": "success",
                                   "message": "Cookies saved successfully!"}
-            logger.info("[cookie-capture] cookies.txt written: %s", COOKIES_FILE)
+            logger.info("[cookie-capture] cookies.txt written: %s", COOKIES_FILE_TMP)
         else:
             with _capture_lock:
                 _capture_state = {"running": False, "status": "error",
@@ -827,7 +849,7 @@ def _manual_export_cookies(cookies_db: str):
         conn.close()
         os.remove(tmp_db)
 
-        with open(COOKIES_FILE, 'w', encoding='utf-8') as f:
+        with open(COOKIES_FILE_TMP, 'w', encoding='utf-8') as f:
             f.write("# Netscape HTTP Cookie File\n")
             f.write("# Auto-generated by Collector Pro cookie capture\n")
             for host, path, secure, exp_utc, name, value in rows:
@@ -848,19 +870,24 @@ def handle_cookies_status():
     """
     Return the current state of cookies.txt and any ongoing capture.
     Response fields:
-      - exists      : bool — whether cookies.txt is present
-      - age_days    : float | None — age of the file in days (None if missing)
+      - exists      : bool — whether a cookies file is present (tmp or repo)
+      - age_days    : float | None — age of the active file in days (None if missing)
       - fresh       : bool — True if age < 14 days
       - capture     : object — current capture state {running, status, message}
+      - is_vercel   : bool — True when running on Vercel (auto-capture unavailable)
+      - source      : str  — which file is active: 'tmp', 'repo', or 'none'
     """
-    exists = os.path.isfile(COOKIES_FILE)
+    active = _active_cookies_file()
+    exists = active is not None
     age_days = None
     fresh = False
+    source = 'none'
 
-    if exists:
-        mtime = os.path.getmtime(COOKIES_FILE)
+    if active:
+        mtime = os.path.getmtime(active)
         age_days = round((time.time() - mtime) / 86400, 1)
         fresh = age_days < 14
+        source = 'tmp' if active == COOKIES_FILE_TMP else 'repo'
 
     with _capture_lock:
         capture = dict(_capture_state)
@@ -870,6 +897,81 @@ def handle_cookies_status():
         'age_days': age_days,
         'fresh': fresh,
         'capture': capture,
+        'is_vercel': IS_VERCEL,
+        'source': source,
+    })
+
+
+@app.route('/api/cookies/upload', methods=['POST'])
+def handle_cookies_upload():
+    """
+    Accept a cookies.txt file upload and save it to /tmp/yt_cookies.txt.
+
+    Accepts either:
+      - multipart/form-data with field name 'cookies_file'
+      - raw text/plain body (entire cookies.txt content)
+
+    Returns:
+      200  { status: 'success', lines: <int> }
+      400  { error: '...' }
+    """
+    content: str | None = None
+
+    # Multipart upload
+    if 'cookies_file' in request.files:
+        f = request.files['cookies_file']
+        try:
+            content = f.read().decode('utf-8', errors='replace')
+        except Exception as e:
+            return jsonify({'error': f'Failed to read uploaded file: {e}'}), 400
+
+    # Raw text body (Content-Type: text/plain)
+    elif request.content_type and 'text/plain' in request.content_type:
+        try:
+            content = request.get_data(as_text=True)
+        except Exception as e:
+            return jsonify({'error': f'Failed to read request body: {e}'}), 400
+
+    # JSON body with base64 or plain text
+    elif request.is_json:
+        body = request.get_json(silent=True) or {}
+        content = body.get('content', '')
+
+    if not content or not content.strip():
+        return jsonify({'error': 'No cookies content provided.'}), 400
+
+    # Basic validation: must look like a Netscape cookie file
+    stripped = content.strip()
+    if not (stripped.startswith('# Netscape') or '\t' in stripped):
+        return jsonify({
+            'error': (
+                'The uploaded file does not look like a valid Netscape cookies.txt. '
+                'Please export it using the "Get cookies.txt LOCALLY" browser extension.'
+            )
+        }), 400
+
+    # Count non-comment, non-empty lines (actual cookie rows)
+    cookie_lines = [
+        ln for ln in stripped.splitlines()
+        if ln.strip() and not ln.strip().startswith('#')
+    ]
+    if len(cookie_lines) == 0:
+        return jsonify({'error': 'The cookies file contains no cookie entries.'}), 400
+
+    # Write atomically to /tmp
+    tmp_write = COOKIES_FILE_TMP + '.tmp_write'
+    try:
+        with open(tmp_write, 'w', encoding='utf-8') as fout:
+            fout.write(stripped + '\n')
+        os.replace(tmp_write, COOKIES_FILE_TMP)
+    except Exception as e:
+        return jsonify({'error': f'Failed to save cookies: {e}'}), 500
+
+    logger.info("[cookie-upload] Saved %d cookie lines to %s", len(cookie_lines), COOKIES_FILE_TMP)
+    return jsonify({
+        'status': 'success',
+        'lines': len(cookie_lines),
+        'message': f'Saved {len(cookie_lines)} cookie entries.',
     })
 
 
@@ -879,7 +981,22 @@ def handle_cookies_capture():
     Start an asynchronous cookie capture flow.
     Launches Chrome with a temporary profile and returns immediately;
     the client should poll GET /api/cookies/status to track progress.
+
+    NOTE: This endpoint is disabled on Vercel / serverless environments because
+    there is no Chrome available and background threads do not persist between
+    function invocations. Users on Vercel must upload cookies.txt manually via
+    POST /api/cookies/upload.
     """
+    if IS_VERCEL:
+        return jsonify({
+            'error': (
+                'Auto-Capture is not available when hosted on Vercel. '
+                'Please export your cookies.txt using the "Get cookies.txt LOCALLY" '
+                'browser extension and upload it using the Upload button.'
+            ),
+            'error_type': 'vercel_unsupported',
+        }), 422
+
     with _capture_lock:
         if _capture_state.get('running'):
             return jsonify({
@@ -892,7 +1009,7 @@ def handle_cookies_capture():
         return jsonify({
             'error': (
                 'Google Chrome or Chromium was not found on this system. '
-                'Please install Chrome and try again, or export cookies.txt manually.'
+                'Please install Chrome and try again, or upload cookies.txt manually.'
             ),
             'error_type': 'chrome_not_found',
         }), 422

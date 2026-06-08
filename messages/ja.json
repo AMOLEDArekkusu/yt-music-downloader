@@ -65,12 +65,17 @@
     "statusActive": "Cookie 有効 · {days}日前に取得",
     "statusExpiringSoon": "Cookie がもうすぐ期切れ · 更新を推奨",
     "statusMissing": "Cookie なし · YouTubeにブロックされます",
-    "captureButton": "Cookie 自動取得",
+    "captureButton": "自動取得",
     "capturing": "YouTube ログインウィンドウを開く…",
     "captureSuccess": "Cookie の取得に成功しました！",
     "captureError": "取得失敗：{error}",
     "captureTimeout": "サインイン待機がタイムアウトしました。再試行してください。",
-    "chromeNotFound": "Chrome が見つかりません。Chrome をインストールするか、手動で cookies.txt をエクスポートしてください。",
-    "manualHint": "またはブラウザ拡張機能 \"Get cookies.txt LOCALLY\" で手動エクスポートできます。"
+    "chromeNotFound": "Chrome が見つかりません。Chrome をインストールするか、cookies.txt を手動でアップロードしてください。",
+    "manualHint": "ブラウザ拡張機能 \"Get cookies.txt LOCALLY\" でエクスポートし、アップロードボタンをクリック。",
+    "uploadButton": "cookies.txt をアップロード",
+    "uploadSuccess": "Cookie をアップロードしました！{lines} 件保存済み。",
+    "uploadError": "アップロード失敗：{error}",
+    "uploadHint": "\"Get cookies.txt LOCALLY\" でエクスポートして、ファイルをここにドロップ。",
+    "dropHint": "cookies.txt をドロップ、またはクリックしてブラウズ"
   }
 }

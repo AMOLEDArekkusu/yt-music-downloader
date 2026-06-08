@@ -1,142 +1,153 @@
-# 🎵 Collector Pro — YouTube Music Downloader (Web)
+<div align="center">
 
-> **A modern, full-stack web application for downloading YouTube Music to high-quality MP3 with full metadata tagging.**
+# 🎵 Collector Pro
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)](https://python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0-green?logo=flask)](https://flask.palletsprojects.com/)
-[![yt-dlp](https://img.shields.io/badge/yt--dlp-latest-red)](https://github.com/yt-dlp/yt-dlp)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+### YouTube Music Downloader — Web Edition
+
+**A modern, full-stack web app for downloading YouTube Music as high-quality MP3s with full metadata tagging.**
+
+<br/>
+
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![yt-dlp](https://img.shields.io/badge/yt--dlp-latest-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://github.com/yt-dlp/yt-dlp)
+[![License](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
+
+<br/>
+
+> 320 kbps · Stereo · 48 kHz · ID3v2 Metadata · Cookie Auto-Capture · 4 Languages
+
+</div>
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Quick Start — Local Development](#quick-start--local-development)
-- [Cookie Authentication](#cookie-authentication)
-- [Vercel Deployment](#vercel-deployment)
-- [API Reference](#api-reference)
-- [File Structure](#file-structure)
-- [Supported Languages](#supported-languages)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+- [Overview](#-overview)
+- [Architecture](#-architecture)
+- [Features](#-features)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+- [Cookie Authentication](#-cookie-authentication)
+- [API Reference](#-api-reference)
+- [File Structure](#-file-structure)
+- [Supported Languages](#-supported-languages)
+- [Configuration](#-configuration)
+- [Vercel Deployment](#-vercel-deployment)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
 
 ---
 
-## Overview
+## 🌟 Overview
 
-Collector Pro Web is the web-based successor to the original Python GUI downloader. It provides a premium, responsive interface for fetching and downloading YouTube Music tracks to MP3, complete with:
+**Collector Pro** is the web-based evolution of the original Python GUI downloader. It pairs a polished Next.js frontend with a Python Flask backend to fetch, convert, and tag YouTube/YouTube Music tracks as broadcast-quality MP3 files — all from your browser.
 
-- **320kbps stereo audio** at 48kHz sampling rate
-- **Full ID3v2 metadata** — title, artist, album, year, genre, track number
-- **Embedded album artwork** from YouTube thumbnails
-- **UTF-8 filename support** — works with all languages and special characters
-- **Automatic session cleanup** — no temp files left behind
-- **Cookie Auto-Capture** — one-click YouTube sign-in to bypass bot detection
+| Capability | Detail |
+|---|---|
+| 🎧 Audio Quality | 320 kbps MP3 · Stereo · 48 kHz |
+| 🏷️ Metadata | Full ID3v2.3 — title, artist, album, year, genre, track number |
+| 🖼️ Artwork | Embedded album art from YouTube thumbnails |
+| 🌐 Filenames | Full UTF-8 support (CJK, Cyrillic, Arabic, …) |
+| 🔑 Auth | Cookie Auto-Capture — one-click YouTube sign-in |
+| 🧹 Cleanup | Automatic temp-file removal after every download |
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    Next.js Frontend                      │
-│                                                          │
-│   React 19  ·  Tailwind CSS 4  ·  next-themes (dark)    │
-│   Client-side i18n (EN · ZH · JA · MS)                  │
-│   Responsive  ·  Glassmorphism  ·  Animations           │
-└────────────────────────┬─────────────────────────────────┘
-                         │  REST API (JSON)
-┌────────────────────────▼─────────────────────────────────┐
-│                 Python Flask Backend                     │
-│                                                          │
-│   yt-dlp ──── Audio extraction & conversion              │
-│   FFmpeg ──── MP3 encoding (320kbps · 48kHz · stereo)    │
-│   mutagen ─── ID3v2 metadata tagging                     │
-│                                                          │
-│   Cookie Auto-Capture: launches Chrome, polls login,    │
-│   exports Netscape cookies.txt via yt-dlp               │
-│                                                          │
-│   Session-based temp storage with auto-cleanup           │
-│   Output: Song_Name-Artist_Name.mp3 (UTF-8)             │
-└──────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                   Next.js 16  ·  React 19               │
+│                                                         │
+│   Tailwind CSS 4  ·  next-themes (dark / light)         │
+│   Client-side i18n — EN · ZH · JA · MS                 │
+│   Glassmorphism UI  ·  Micro-animations  ·  Responsive  │
+└────────────────────────┬────────────────────────────────┘
+                         │  REST API  (JSON / HTTP)
+┌────────────────────────▼────────────────────────────────┐
+│                  Python Flask Backend                   │
+│                                                         │
+│  yt-dlp  ──►  Audio extraction (android + tv_embedded)  │
+│  FFmpeg  ──►  MP3 encoding — 320 kbps · 48 kHz · stereo │
+│  mutagen ──►  ID3v2.3 metadata + artwork embedding      │
+│                                                         │
+│  Cookie Auto-Capture                                    │
+│    └─ Launches sandboxed Chrome, polls for sign-in,     │
+│       exports Netscape cookies.txt via yt-dlp           │
+│                                                         │
+│  Session-based temp storage with automatic cleanup      │
+│  Output filename: Song_Name-Artist_Name.mp3 (UTF-8)     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### Component Mapping
+### Component Map
 
-| Component | Technology | File(s) |
-|-----------|-----------|---------|
-| Frontend UI | Next.js 16 + React 19 | [`app/page.tsx`](app/page.tsx) |
-| Design System | CSS Custom Properties + Tailwind | [`app/globals.css`](app/globals.css) |
-| Theme Toggle | next-themes + Lucide Icons | [`app/components/ThemeToggle.tsx`](app/components/ThemeToggle.tsx) |
-| Language Switcher | Client-side i18n | [`app/components/LanguageSwitcher.tsx`](app/components/LanguageSwitcher.tsx) |
-| Track Display | React Component | [`app/components/TrackCard.tsx`](app/components/TrackCard.tsx) |
-| Process Log | Terminal-style Component | [`app/components/ProgressLog.tsx`](app/components/ProgressLog.tsx) |
-| Cookie Banner | Auth status + Auto-Capture UI | [`app/components/CookieStatusBanner.tsx`](app/components/CookieStatusBanner.tsx) |
+| Layer | Technology | Key File(s) |
+|---|---|---|
+| Main page | Next.js + React | [`app/page.tsx`](app/page.tsx) |
+| Design system | CSS Custom Properties + Tailwind 4 | [`app/globals.css`](app/globals.css) |
+| Theme toggle | next-themes + Lucide | [`app/components/ThemeToggle.tsx`](app/components/ThemeToggle.tsx) |
+| Language switcher | Client-side i18n | [`app/components/LanguageSwitcher.tsx`](app/components/LanguageSwitcher.tsx) |
+| Track card | React component | [`app/components/TrackCard.tsx`](app/components/TrackCard.tsx) |
+| Progress log | Terminal-style component | [`app/components/ProgressLog.tsx`](app/components/ProgressLog.tsx) |
+| Cookie banner | Auth status + Auto-Capture UI | [`app/components/CookieStatusBanner.tsx`](app/components/CookieStatusBanner.tsx) |
 | Backend API | Flask + yt-dlp + mutagen | [`api/index.py`](api/index.py) |
 | Translations | JSON message files | [`messages/`](messages/) |
 
 ---
 
-## Features
+## ✨ Features
 
 ### 🎨 Frontend
-- **Modern UI** with glassmorphism cards and micro-animations
-- **Dark / Light theme** toggle with smooth transitions
-- **Multilingual support** — English, Chinese, Japanese, Malay (client-side, no build step)
-- **Responsive design** — works on desktop and mobile
-- **Real-time progress log** with terminal-style interface
-- **Track preview** — see title, artist, duration, and thumbnail before downloading
-- **Cookie Status Banner** — shows authentication status and triggers Auto-Capture
+- **Glassmorphism UI** — modern cards, gradients, and smooth micro-animations
+- **Dark / Light theme** — persistent system-aware toggle
+- **4 languages** — English, 中文, 日本語, Bahasa Melayu — loaded client-side, no build step needed
+- **Responsive** — works great on desktop and mobile
+- **Real-time progress log** — terminal-style output showing every download step
+- **Track preview** — thumbnail, title, artist, and duration before you commit to downloading
+- **Cookie Status Banner** — live auth state indicator with one-click Auto-Capture trigger
 
-### 🔧 Backend
-- **YouTube URL support** — single videos, playlists, albums, YouTube Music, YouTube Shorts
-- **High-quality audio** — 320kbps MP3, stereo, 48kHz sampling
-- **Full metadata tagging** — ID3v2 with title, artist, album, year, genre, artwork
-- **UTF-8 filenames** — supports all languages (CJK, Cyrillic, Arabic, etc.)
-- **Output format** — `Song_Name-Artist_Name.mp3`
-- **Session management** — temp files cleaned up after download completes
-- **Security** — UUID-based sessions with path traversal protection
-- **Cookie Auto-Capture** — launches a sandboxed Chrome instance, detects YouTube sign-in, and exports `cookies.txt` automatically
+### ⚙️ Backend
+- **Broad URL support** — single videos, playlists, albums, YouTube Music, YouTube Shorts
+- **High-quality output** — 320 kbps MP3, stereo, 48 kHz, ID3v2.3
+- **Smart player clients** — uses `android` + `tv_embedded` (no PO Token required); `ios` intentionally excluded
+- **UTF-8 filenames** — NFC-normalized, path-safe, supports all scripts
+- **Session security** — UUID-scoped temp dirs with path-traversal protection
+- **Cookie Auto-Capture** — launches a fresh sandboxed Chrome profile, detects sign-in, exports `cookies.txt` automatically
 
 ---
 
-## Prerequisites
+## 📦 Prerequisites
 
-Ensure the following are installed on your system:
-
-| Requirement | Version | Check Command |
-|-------------|---------|--------------|
-| **Node.js** | ≥ 18.x | `node --version` |
-| **npm** | ≥ 9.x | `npm --version` |
-| **Python** | ≥ 3.9 | `python --version` |
-| **pip** | ≥ 21.x | `pip --version` |
-| **FFmpeg** | ≥ 5.x | `ffmpeg -version` |
+| Requirement | Minimum Version | Check |
+|---|---|---|
+| **Node.js** | 18.x | `node --version` |
+| **npm** | 9.x | `npm --version` |
+| **Python** | 3.9 | `python --version` |
+| **pip** | 21.x | `pip --version` |
+| **FFmpeg** | 5.x | `ffmpeg -version` |
 
 <details>
-<summary>📦 Installing FFmpeg</summary>
+<summary>📥 How to install FFmpeg</summary>
 
-### Windows
+#### Windows
 ```bash
-# Using winget (recommended)
+# Recommended — winget
 winget install Gyan.FFmpeg
 
-# Or download from:
+# Manual — download the release build and add bin/ to PATH
 # https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
-# Extract and add the bin/ folder to your system PATH
 ```
 
-### macOS
+#### macOS
 ```bash
 brew install ffmpeg
 ```
 
-### Linux (Ubuntu/Debian)
+#### Linux (Ubuntu / Debian)
 ```bash
 sudo apt update && sudo apt install ffmpeg
 ```
@@ -145,107 +156,83 @@ sudo apt update && sudo apt install ffmpeg
 
 ---
 
-## Quick Start — Local Development
+## 🚀 Quick Start
 
-### 1. Clone the Repository
+### 1. Clone
 
 ```bash
 git clone <your-repo-url>
 cd yt-music-downloader
 ```
 
-### 2. Install Frontend Dependencies
+### 2. Install frontend dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Install Backend Dependencies
+### 3. Install backend dependencies
 
 ```bash
 pip install -r api/requirements.txt
 ```
 
-### 4. Start Both Servers
+### 4. Run both servers
 
-You need **two terminal windows** running simultaneously:
+Open **two** terminal windows side by side:
 
-**Terminal 1 — Next.js Frontend** (port 3000):
+**Terminal 1 — Next.js frontend** (port 3000)
 ```bash
 npm run dev
 ```
 
-**Terminal 2 — Python Backend** (port 5000):
+**Terminal 2 — Flask backend** (port 5000)
 ```bash
 python api/index.py
 ```
 
-### 5. Open the App
+### 5. Open the app
 
-Navigate to **[http://localhost:3000](http://localhost:3000)** in your browser.
+Navigate to **[http://localhost:3000](http://localhost:3000)**.
 
-> **Note:** The Next.js dev server proxies `/api/*` requests to `http://localhost:5000`, so both servers work together seamlessly.
+> The Next.js dev server rewrites `/api/*` → `http://localhost:5000` via [`next.config.ts`](next.config.ts), so both services work together seamlessly.
 
 ---
 
-## Cookie Authentication
+## 🍪 Cookie Authentication
 
-YouTube requires authentication cookies to prevent bot detection. The app will show a **Cookie Status Banner** at the top of the page indicating whether valid cookies are present.
+YouTube requires valid authentication cookies to prevent bot-detection. The **Cookie Status Banner** at the top of the page shows whether cookies are present, how old they are, and whether they're still fresh.
 
-### Option A — Auto-Capture (Recommended)
+### Option A — Auto-Capture *(recommended, local only)*
 
-1. Click the **"Auto-Capture"** button in the Cookie Status Banner
-2. A sandboxed Chrome window will open pointing at YouTube Music
+1. Click **"Auto-Capture"** in the banner
+2. A sandboxed Chrome window opens pointing to YouTube Music
 3. Sign in with your Google account
-4. The window closes automatically once sign-in is detected
-5. `api/cookies.txt` is exported and the banner turns green ✅
+4. Chrome closes automatically once sign-in is detected
+5. `api/cookies.txt` is saved and the banner turns green ✅
 
-> **Requirements:** Google Chrome or Chromium must be installed. The Auto-Capture flow works only in **local development** mode — it cannot run on Vercel or other serverless hosts.
+> **Requires:** Google Chrome or Chromium installed on the machine.  
+> **Not available** on Vercel or other serverless hosts — use Option B there.
 
 ### Option B — Manual Export
 
-1. Install the **[Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)** Chrome extension
+1. Install **[Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)** in Chrome
 2. Visit [youtube.com](https://youtube.com) while signed in
-3. Click the extension icon → **Export** → save as `api/cookies.txt`
+3. Click the extension icon → **Export** → save the file as `api/cookies.txt`
 
 ### Cookie Freshness
 
-Cookies expire after ~14 days. The banner will warn you when cookies are stale (older than 14 days). Re-run Auto-Capture or re-export manually to refresh them.
+Cookies typically expire after **~14 days**. The banner displays the cookie age and warns you when they go stale. Refresh via Auto-Capture or a new manual export.
 
-> **Note on Chrome 127+:** Chrome's App-Bound Encryption (DPAPI) prevents external processes from reading cookies from your *main* Chrome profile. The Auto-Capture flow sidesteps this by launching a **fresh temporary profile** that is not protected by ABE.
-
----
-
-## Vercel Deployment
-
-### Limitations
-
-> ⚠️ **Important:** Vercel serverless functions have execution time limits (10s free tier, 60s Pro). Full audio download + conversion will timeout on Vercel. For production use, consider self-hosting or using a server with no timeout limits.
->
-> The **Cookie Auto-Capture** feature requires a local Chrome installation and **cannot run on Vercel**. Provide `cookies.txt` via environment secrets or another method if deploying to Vercel.
-
-### Steps
-
-1. Push the code to a GitHub repository
-2. Import the repository on [Vercel](https://vercel.com/new)
-3. Vercel will auto-detect the Next.js frontend and Python API
-4. Deploy — the frontend will work, but download functionality is limited by serverless timeouts
-
-### Configuration
-
-The [`vercel.json`](vercel.json) is pre-configured to:
-- Build the Next.js frontend with `@vercel/next`
-- Build the Python API with `@vercel/python`
-- Route `/api/*` requests to the Python handler
+> **Chrome 127+ note:** App-Bound Encryption (DPAPI) prevents external tools from reading cookies from your main Chrome profile. Auto-Capture sidesteps this by launching a **fresh temporary profile** that is not protected by DPAPI.
 
 ---
 
-## API Reference
+## 📡 API Reference
 
 ### `GET /api/status`
-Health check endpoint.
+Health check.
 
-**Response:**
 ```json
 {
   "status": "online",
@@ -257,16 +244,14 @@ Health check endpoint.
 ---
 
 ### `POST /api/fetch`
-Extract track metadata from a YouTube URL without downloading.
+Extract track metadata from a YouTube URL — no download yet.
 
-**Request:**
+**Request**
 ```json
-{
-  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-}
+{ "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }
 ```
 
-**Response:**
+**Response `200`**
 ```json
 {
   "session_id": "uuid-string",
@@ -284,7 +269,7 @@ Extract track metadata from a YouTube URL without downloading.
 }
 ```
 
-**Error — auth required (401):**
+**Response `401` — auth required**
 ```json
 {
   "error": "YouTube requires authentication cookies...",
@@ -297,7 +282,7 @@ Extract track metadata from a YouTube URL without downloading.
 ### `POST /api/download`
 Download and convert a single track to MP3.
 
-**Request:**
+**Request**
 ```json
 {
   "session_id": "uuid-from-fetch",
@@ -306,7 +291,7 @@ Download and convert a single track to MP3.
 }
 ```
 
-**Response:**
+**Response `200`**
 ```json
 {
   "status": "success",
@@ -319,26 +304,24 @@ Download and convert a single track to MP3.
 ---
 
 ### `GET /api/download/:session_id/:filename`
-Serve a completed MP3 file for browser download.
+Stream a completed MP3 file to the browser for download.
 
 ---
 
 ### `POST /api/cleanup`
-Remove all temp files for a session.
+Delete all temp files for a session.
 
-**Request:**
+**Request**
 ```json
-{
-  "session_id": "uuid-from-fetch"
-}
+{ "session_id": "uuid-from-fetch" }
 ```
 
 ---
 
 ### `GET /api/cookies/status`
-Return the current state of `cookies.txt` and any ongoing Auto-Capture.
+Return the state of `cookies.txt` and any active Auto-Capture.
 
-**Response:**
+**Response**
 ```json
 {
   "exists": true,
@@ -353,205 +336,235 @@ Return the current state of `cookies.txt` and any ongoing Auto-Capture.
 ```
 
 | Field | Type | Description |
-|-------|------|-------------|
-| `exists` | bool | Whether `api/cookies.txt` is present |
-| `age_days` | float \| null | Age of the file in days (`null` if missing) |
-| `fresh` | bool | `true` if age < 14 days |
-| `capture.running` | bool | Whether an Auto-Capture is in progress |
-| `capture.status` | string | `idle` \| `waiting_login` \| `success` \| `error` \| `timeout` |
+|---|---|---|
+| `exists` | `bool` | Whether `api/cookies.txt` is present |
+| `age_days` | `float \| null` | Age in days; `null` if missing |
+| `fresh` | `bool` | `true` if age < 14 days |
+| `capture.running` | `bool` | Auto-Capture in progress |
+| `capture.status` | `string` | `idle` · `waiting_login` · `success` · `error` · `timeout` |
 
 ---
 
 ### `POST /api/cookies/capture`
-Start an asynchronous Cookie Auto-Capture flow. Launches Chrome and returns immediately. Poll `GET /api/cookies/status` to track progress.
+Start an asynchronous Cookie Auto-Capture. Returns immediately — poll `GET /api/cookies/status` for progress.
 
-**Response (started):**
-```json
-{
-  "status": "started",
-  "message": "Chrome is opening — please sign in to YouTube, then the window will close automatically."
-}
-```
-
-**Response (already running — 409):**
-```json
-{
-  "status": "already_running",
-  "message": "A capture session is already in progress."
-}
-```
-
-**Response (Chrome not found — 422):**
-```json
-{
-  "error": "Google Chrome or Chromium was not found on this system...",
-  "error_type": "chrome_not_found"
-}
-```
+| Scenario | HTTP | Body |
+|---|---|---|
+| Started | `200` | `{ "status": "started", "message": "Chrome is opening…" }` |
+| Already running | `409` | `{ "status": "already_running" }` |
+| Chrome not found | `422` | `{ "error": "…", "error_type": "chrome_not_found" }` |
 
 ---
 
-## File Structure
+## 📁 File Structure
 
 ```
 yt-music-downloader/
+│
 ├── api/
 │   ├── index.py              # Flask backend — download, convert, tag, cookie capture
-│   ├── requirements.txt      # Python dependencies
-│   └── cookies.txt           # Netscape-format YouTube auth cookies (auto-generated or manual)
+│   ├── requirements.txt      # Python dependencies (Flask, yt-dlp, mutagen)
+│   └── cookies.txt           # Netscape-format auth cookies (auto-generated or manual)
+│
 ├── app/
 │   ├── components/
-│   │   ├── CookieStatusBanner.tsx  # Cookie auth status + Auto-Capture trigger
-│   │   ├── ThemeProvider.tsx       # next-themes wrapper
-│   │   ├── ThemeToggle.tsx         # Dark/light toggle button
-│   │   ├── LanguageSwitcher.tsx    # Language dropdown (EN/ZH/JA/MS)
-│   │   ├── TrackCard.tsx           # Track display card with download button
-│   │   └── ProgressLog.tsx         # Terminal-style activity log
-│   ├── globals.css            # Design system & theme tokens
-│   ├── layout.tsx             # Root layout with fonts & providers
-│   └── page.tsx               # Main application page
+│   │   ├── CookieStatusBanner.tsx   # Auth status + Auto-Capture trigger
+│   │   ├── ThemeProvider.tsx        # next-themes wrapper
+│   │   ├── ThemeToggle.tsx          # Dark / light mode button
+│   │   ├── LanguageSwitcher.tsx     # Language dropdown (EN / ZH / JA / MS)
+│   │   ├── TrackCard.tsx            # Track display card with download action
+│   │   └── ProgressLog.tsx          # Terminal-style activity log
+│   ├── globals.css                  # Design system & Tailwind theme tokens
+│   ├── layout.tsx                   # Root layout — fonts, providers, metadata
+│   └── page.tsx                     # Main application page
+│
 ├── messages/
-│   ├── en.json                # English translations
-│   ├── zh.json                # Chinese translations
-│   ├── ja.json                # Japanese translations
-│   └── ms.json                # Malay translations
-├── .gitignore
-├── next.config.ts             # Next.js config with API proxy rewrite
-├── package.json
+│   ├── en.json                # English
+│   ├── zh.json                # Chinese (中文)
+│   ├── ja.json                # Japanese (日本語)
+│   └── ms.json                # Malay (Bahasa Melayu)
+│
+├── next.config.ts             # Next.js config — API proxy rewrite
 ├── vercel.json                # Vercel deployment config
+├── package.json
 ├── tsconfig.json
-└── README.md                  # This file
+└── README.md
 ```
 
 ---
 
-## Supported Languages
+## 🌐 Supported Languages
 
 | Code | Language | File |
-|------|----------|------|
+|---|---|---|
 | `en` | English | [`messages/en.json`](messages/en.json) |
 | `zh` | 中文 (Chinese) | [`messages/zh.json`](messages/zh.json) |
 | `ja` | 日本語 (Japanese) | [`messages/ja.json`](messages/ja.json) |
 | `ms` | Bahasa Melayu (Malay) | [`messages/ms.json`](messages/ms.json) |
 
-Translations are loaded **client-side** at runtime — no build step required. To add a new language:
+Translations are resolved **client-side at runtime** — no build step or server restart needed.
 
-1. Create a new JSON file in `messages/` (e.g., `messages/ko.json`)
-2. Copy the structure from `messages/en.json` and translate all values
-3. Add the language entry to `LANGUAGES` in [`app/components/LanguageSwitcher.tsx`](app/components/LanguageSwitcher.tsx)
-4. Import the JSON and register it in the `messageMap` in [`app/page.tsx`](app/page.tsx)
+**To add a new language:**
+
+1. Create `messages/<code>.json` and copy the structure from `messages/en.json`
+2. Translate all values
+3. Add an entry to `LANGUAGES` in [`app/components/LanguageSwitcher.tsx`](app/components/LanguageSwitcher.tsx)
+4. Register the import and locale key in the `messageMap` inside [`app/page.tsx`](app/page.tsx)
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
-### Audio Output Defaults
+### Audio Output
 
 | Setting | Value |
-|---------|-------|
+|---|---|
 | Format | MP3 |
 | Bitrate | 320 kbps |
 | Sample Rate | 48,000 Hz |
 | Channels | Stereo (2) |
-| Metadata | ID3v2.3 |
-| Filename | `Song_Name-Artist_Name.mp3` |
-| Encoding | UTF-8 |
+| Metadata standard | ID3v2.3 |
+| Filename pattern | `Song_Name-Artist_Name.mp3` |
+| Filename encoding | UTF-8 (NFC) |
 
 ### yt-dlp Player Clients
 
-The backend uses `android` and `tv_embedded` YouTube player clients (falling back to `web`) for both metadata fetching and audio downloading. The `ios` client is intentionally excluded because it requires a GVS PO Token (yt-dlp 2026+) and silently skips all formats without one, causing the *"Requested format is not available"* error.
+The backend targets the `android` and `tv_embedded` YouTube player clients (with a `web` fallback). The `ios` client is **deliberately excluded** — it requires a GVS PO Token (yt-dlp 2026+) and silently skips all formats without one, causing the *"Requested format is not available"* error.
 
 ### Environment Variables
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+|---|---|---|
 | `PORT` | `5000` | Flask backend port |
 | `FLASK_DEBUG` | `true` | Enable Flask debug mode |
 
 ---
 
-## Troubleshooting
+## ☁️ Vercel Deployment
+
+> **⚠️ Limitation:** Vercel serverless functions time out after 10 s (free) / 60 s (Pro). Audio download + FFmpeg conversion typically exceeds this. For real downloads, use **localhost mode**. Vercel is best suited for hosting the UI and metadata fetching only.
+
+> **⚠️ Auto-Capture unavailable:** Cookie Auto-Capture requires a local Chrome installation and cannot run on Vercel. Supply `api/cookies.txt` via another method (e.g., environment secret) when deploying remotely.
+
+### Deploy Steps
+
+1. Push the repo to GitHub
+2. Import the repository on [Vercel](https://vercel.com/new)
+3. Vercel auto-detects Next.js (frontend) and Python (API)
+4. Deploy — UI works immediately; download functionality is limited by serverless timeouts
+
+The included [`vercel.json`](vercel.json) pre-configures:
+- `@vercel/next` for the frontend build
+- `@vercel/python` for the Flask API
+- `/api/*` route rewrites to the Python handler
+
+---
+
+## 🛠️ Troubleshooting
 
 <details>
 <summary>❌ FFmpeg not found</summary>
 
-Ensure FFmpeg is installed and on your system PATH:
+Verify FFmpeg is on your system PATH:
 ```bash
 ffmpeg -version
 ```
-If not found, follow the [FFmpeg installation instructions](#prerequisites) above.
+If missing, follow the [FFmpeg installation steps](#-prerequisites) above.
+
 </details>
 
 <details>
-<summary>❌ CORS errors in browser</summary>
+<summary>❌ CORS errors in the browser</summary>
 
-The backend uses `flask-cors` to handle CORS. Ensure you're running the Flask server (`python api/index.py`) on port 5000 and the Next.js dev server proxies `/api/*` correctly via `next.config.ts`.
-</details>
+The Flask backend uses `flask-cors`. Make sure:
+- The Flask server is running on port 5000 (`python api/index.py`)
+- The Next.js dev server is running (`npm run dev`)
+- The proxy rewrite in [`next.config.ts`](next.config.ts) maps `/api/*` → `http://localhost:5000`
 
-<details>
-<summary>❌ Download times out on Vercel</summary>
-
-Vercel serverless functions have a 10–60 second timeout. Audio downloading + conversion typically takes longer. Use **localhost mode** for actual downloads. Vercel deployment is best suited for the UI + metadata fetching only.
 </details>
 
 <details>
 <summary>❌ YouTube bot detection / "Sign-in required" / auth_required error</summary>
 
-YouTube blocks unauthenticated requests. The Cookie Status Banner in the app will indicate if cookies are missing or stale.
+YouTube blocks unauthenticated yt-dlp requests. The Cookie Status Banner will tell you if cookies are missing or stale.
 
 **Fix — Auto-Capture (local only):**
 1. Click **"Auto-Capture"** in the banner
-2. Sign into YouTube in the Chrome window that opens
+2. Sign in to YouTube in the Chrome window that opens
 3. The window closes automatically and `api/cookies.txt` is saved
 
 **Fix — Manual export:**
-1. Install the [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) extension
+1. Install [Get cookies.txt LOCALLY](https://chrome.google.com/webstore/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc)
 2. While signed into YouTube, click the extension → Export → save as `api/cookies.txt`
 
-Cookies typically expire in ~14 days. The banner shows the age and freshness of the current cookie file.
+Cookies expire after ~14 days. Refresh them when the banner turns yellow.
+
 </details>
 
 <details>
-<summary>❌ "Requested format is not available" error</summary>
+<summary>❌ "Requested format is not available"</summary>
 
-This usually means yt-dlp selected the `ios` player client which requires a PO token. The backend is configured to use `android` + `tv_embedded` clients which don't need PO tokens. If you see this error:
+This usually means yt-dlp picked the `ios` player client, which requires a PO Token.
 
 1. Update yt-dlp: `pip install -U yt-dlp`
-2. Check that your `cookies.txt` is present and fresh (less than 14 days old)
-3. Try the Auto-Capture flow to refresh cookies
+2. Confirm `api/cookies.txt` exists and is fresh (< 14 days old)
+3. Re-run Auto-Capture to refresh cookies
+
 </details>
 
 <details>
-<summary>❌ Auto-Capture: Chrome not found</summary>
+<summary>❌ Auto-Capture — Chrome not found</summary>
 
-Chrome or Chromium must be installed for Auto-Capture to work. The backend searches common Windows paths. If Chrome is installed in a non-standard location, add it to your system PATH or export `cookies.txt` manually instead.
+Chrome or Chromium must be installed for Auto-Capture. The backend searches standard Windows installation paths. If Chrome is in a non-standard location, add its directory to your system PATH, or use the **manual export** method instead.
+
 </details>
 
 <details>
-<summary>❌ Auto-Capture: cookie export produced an empty file</summary>
+<summary>❌ Auto-Capture — empty cookies file</summary>
 
-Chrome 127+ uses App-Bound Encryption (DPAPI) on your *main* profile's cookies. The Auto-Capture flow uses a **fresh temporary profile** to avoid this — but yt-dlp's `cookiesfrombrowser` extractor may still fail on some Windows configurations. In that case, fall back to the **manual export** method using the browser extension.
+Chrome 127+ applies App-Bound Encryption (DPAPI) to your main profile's cookies. Auto-Capture uses a **fresh temporary profile** to bypass this. If the resulting `cookies.txt` is still empty, fall back to the **manual export** browser-extension method.
+
+</details>
+
+<details>
+<summary>❌ Download times out on Vercel</summary>
+
+Vercel serverless functions have a 10–60 s execution limit. Audio downloading + FFmpeg conversion takes longer. Use **localhost mode** for actual downloads; Vercel is suitable for UI hosting and metadata fetching only.
+
 </details>
 
 <details>
 <summary>❌ Non-ASCII filenames not working</summary>
 
-The backend normalizes all filenames to NFC Unicode form and sanitizes path-unsafe characters while preserving UTF-8 letters. If you encounter issues, ensure your filesystem supports UTF-8 (NTFS, ext4, APFS all do).
+The backend normalizes filenames to NFC Unicode and strips only path-unsafe characters, preserving all UTF-8 letters. NTFS (Windows), ext4 (Linux), and APFS (macOS) all support UTF-8 filenames natively.
+
 </details>
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -m 'Add my feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+   ```bash
+   git checkout -b feature/my-feature
+   ```
+3. Commit your changes
+   ```bash
+   git commit -m "feat: add my feature"
+   ```
+4. Push to your fork
+   ```bash
+   git push origin feature/my-feature
+   ```
+5. Open a Pull Request against `main`
 
 ---
 
-<p align="center">
-  <strong>Built with ❤️ using Next.js, Flask, yt-dlp & FFmpeg</strong><br>
-  <sub>320kbps · Stereo · 48kHz · Full Metadata · Cookie Auto-Capture</sub>
-</p>
+<div align="center">
+
+Built with ❤️ using **Next.js · Flask · yt-dlp · FFmpeg**
+
+*320 kbps · Stereo · 48 kHz · Full ID3v2 Metadata · Cookie Auto-Capture*
+
+</div>
